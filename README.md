@@ -12,39 +12,16 @@ El objetivo de este repo es ir guardando el código limpio, organizado y version
 
 > Los nombres de carpetas son orientativos, puedes adaptarlos según cómo organices tu código.
 
-- `01-intro-js-ts/`  
+- `01-reforzamiento/`  
   Repaso de JavaScript, TypeScript y conceptos básicos necesarios para React.
 
-- `02-bases-react/`  
-  Componentes funcionales, JSX, props, estado, eventos, comunicación entre componentes.
+- `02-first-steps/`  
+  Componentes funcionales, JSX, props, estado, eventos, comunicación entre componentes, testing básico.
 
-- `03-hooks/`  
-  Hooks básicos y avanzados (incluye los nuevos de React 19+), custom hooks y ejercicios.
+- `03-gifs-app/`  
+  Proyecto completo: aplicación de búsqueda y visualización de GIFs con Giphy API.
 
-- `04-estado-global/`  
-  Context API, Redux Toolkit, Zustand, Redux DevTools y patrones de manejo de estado global.
-
-- `05-router/`  
-  React Router v7+, múltiples routers, layouts por ruta, history, query strings, etc.
-
-- `06-testing/`  
-  Pruebas unitarias y de integración con **Vitest** y **React Testing Library**:  
-  componentes, hooks, custom hooks, context, Redux, fetch, mocks, spies, snapshots…
-
-- `07-auth/`  
-  Autenticación con **JWT**, revalidación de tokens, **Google Sign-in**, auth personalizada.
-
-- `08-mern/`  
-  Proyectos **MERN** (Mongo, Express, React, Node), modelos con Mongoose, CRUD, logs, etc.
-
-- `09-ui/`  
-  Interfaces con **TailwindCSS**, **ShadCN**, **MUI**, animaciones, diseños con ayuda de AI.
-
-- `10-deploys/`  
-  Despliegues a producción (frontend y backend), variables de entorno, builds, Docker (cuando aplique).
-
-- `99-notas/`  
-  Notas personales, snippets, pruebas rápidas y material extra del curso.
+...
 
 ---
 
@@ -73,11 +50,10 @@ Algunos de los temas y herramientas que se practican en los ejercicios:
 
 Basado en los requisitos del curso:
 
-- Conocimientos básicos de **JavaScript** y programación
+- Conocimientos básicos de **JavaScript**, **TypeScript** y programación
 - Poder instalar software en el equipo (Node, npm, etc.)
 - Sistema operativo: **Windows**, **macOS** u **Linux**
 - Editor de código (VS Code, WebStorm, etc.)
-- Ganas de hacer los ejercicios y tareas adicionales 😉
 
 ---
 
@@ -88,8 +64,5 @@ Dentro de la carpeta del ejercicio o proyecto:
 ```bash
 # Instalar dependencias
 npm install
-
 # Desarrollo
 npm run dev
-# o según el proyecto:
-npm start
