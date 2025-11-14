@@ -7,7 +7,7 @@ interface Props {
     quantity?: number
 }
 
-export const ItemCounter = ({ name, quantity = 10 }: Props) => {
+export const ItemCounter = ({ name, quantity = 1 }: Props) => {
 
     const [count, setCount] = useState(quantity)
 
@@ -37,12 +37,9 @@ export const ItemCounter = ({ name, quantity = 10 }: Props) => {
                 }}>
                 {name}
             </span>
-            <button
-                onClick={handleAdd}>+1</button>
+            <button onClick={handleAdd}>+1</button>
             <span>{count}</span>
-            <button
-                onClick={handleSubtract}
-            >-1</button>
+            <button onClick={handleSubtract}>-1</button>
         </section >
     )
 }
