@@ -1,33 +1,12 @@
 import { GiftList } from "./shared/components/GiftList"
 import { PreviousSearches } from "./gifs/PreviousSearches"
-// import { mockGifs } from "./mock-data/gifs.mock"
 import { CustomHeader } from "./shared/components/CustomHeader"
 import { SearchBar } from "./shared/components/SearchBar"
-import { useState } from "react"
-import { getGifsByQuery } from "./gifs/actions/get-gifs-by-query.action"
-import type { Gif } from "./gifs/interfaces/gif.interface"
+import { useGifs } from "./gifs/hooks/useGifs"
 
 export const GifsApp = () => {
 
-    const [previousTerms, setPreviousTerms] = useState<string[]>([])
-
-    const [gifs, setGifs] = useState<Gif[]>([])
-
-    const handleTermClicked = (term: string) => {
-        console.log({ term })
-    }
-
-    const handleSearch = async (query: string) => {
-        const queryCleared = query.trim().toLowerCase()
-
-        if (queryCleared.length === 0 || previousTerms.includes(queryCleared)) return
-
-        setPreviousTerms([queryCleared, ...previousTerms].splice(0, 8))
-
-        const gifs = await getGifsByQuery(query)
-
-        setGifs(gifs)
-    }
+    const { gifs, previousTerms, handleSearch, handleTermClicked } = useGifs()
 
     return (
         <>
