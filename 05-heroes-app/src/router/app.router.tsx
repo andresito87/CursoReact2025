@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { AdminLayout } from "@/admin/layouts/AdminLayout";
 import { AdminPage } from "@/admin/pages/AdminPage";
 import { HeroPage } from "@/heroes/pages/hero/HeroPage";
@@ -18,13 +18,17 @@ export const appRouter = createBrowserRouter([
                 element: <HomePage />
             },
             {
-                path: 'heroes/1',
+                path: 'heroes/:idSlug', // slug dinámico, argumento en la url que usamos para obtener la info del heroe
                 element: <HeroPage />
             },
             {
                 path: 'search',
                 element: <SearchPage />
             },
+            {
+                path: '*',
+                element: <Navigate to='/' />
+            }
         ]
     },
     {
