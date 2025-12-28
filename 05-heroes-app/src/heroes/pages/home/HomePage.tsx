@@ -5,9 +5,10 @@ import { HeroStats } from "@/heroes/components/HeroStats";
 import { HeroGrid } from "@/heroes/components/HeroGrid";
 import { CustomPagination } from "@/components/custom/CustomPagination";
 import { CustomBreadCrumbs } from "@/components/custom/CustomBreadcrumbs";
-import { useMemo } from "react";
+import { use, useMemo } from "react";
 import { useHeroSummary } from "@/heroes/hooks/useHeroSummary";
 import { usePaginatedHero } from "@/heroes/hooks/usePaginatedHero";
+import { FavoriteHeroContext } from "@/heroes/context/FavoriteHeroContext";
 
 export const HomePage = () => {
 
@@ -30,6 +31,9 @@ export const HomePage = () => {
 
     // Custom Hook con tanstack para almacenar y recuperar data de la caché
     const { data: summary } = useHeroSummary();
+
+    // Obtenemos los favoritos del contexto
+    const { favoriteCount, favorites } = use(FavoriteHeroContext);
 
     // ! No usar efectos para peticiones http
     // useEffect(() => {
@@ -67,7 +71,7 @@ export const HomePage = () => {
                             return prev;
                         })}
                     >
-                        Favorites (3)
+                        Favorites ({favoriteCount})
                     </TabsTrigger>
                     <TabsTrigger value="heroes"
                         onClick={() => setSearchParams((prev) => {
@@ -92,23 +96,22 @@ export const HomePage = () => {
                 </TabsContent>
                 <TabsContent value="favorites">
                     {/* Mostrar todos los personajes favoritos */}
-                    <h1>Favoritos !!!!</h1>
-                    <HeroGrid heroes={[]} />
+                    <HeroGrid heroes={favorites} />
                 </TabsContent>
                 <TabsContent value="heroes">
                     {/* Mostrar todos los héroes */}
-                    <h1>Héroes !!!!</h1>
                     <HeroGrid heroes={heroesResponse?.heroes ?? []} />
                 </TabsContent>
                 <TabsContent value="villains">
                     {/* Mostrar todos los villanos */}
-                    <h1>Villanos !!!!</h1>
                     <HeroGrid heroes={heroesResponse?.heroes ?? []} />
                 </TabsContent>
             </Tabs>
 
             {/* Pagination */}
-            <CustomPagination totalPages={heroesResponse?.pages ?? 1} />
+            {selectedTab !== 'favorites' && (
+                <CustomPagination totalPages={heroesResponse?.pages ?? 1} />
+            )}
         </>
     );
 };

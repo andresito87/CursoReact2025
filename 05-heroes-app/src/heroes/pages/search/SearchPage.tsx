@@ -2,8 +2,37 @@ import { CustomJumbotron } from "@/components/custom/CustomJumbotron";
 import { HeroStats } from "@/heroes/components/HeroStats";
 import { SearchControls } from "./ui/SearchControls";
 import { CustomBreadCrumbs } from "@/components/custom/CustomBreadcrumbs";
+import { useQuery } from "@tanstack/react-query";
+import { searchHeroesAction } from "@/heroes/actions/search-heroes.action";
+import { useSearchParams } from "react-router";
+import { HeroGrid } from "@/heroes/components/HeroGrid";
+import type { Hero } from "@/heroes/types/hero.interface";
 
 export const SearchPage = () => {
+
+    // buscamos los parámetros de búsqueda en la url
+    const [searchParams] = useSearchParams();
+    const name = searchParams.get('name') ?? '';
+    const strength = searchParams.get('strength') ?? '';
+
+    // utilizamos tansstack para recuperar los heroes que coinciden con los términos de búsqueda
+    const { data: heroes, isLoading, isFetching, isError, error } = useQuery<Hero[]>({
+        queryKey: ["search", { name, strength }],
+        queryFn: () => searchHeroesAction({ name, strength }),
+        staleTime: 1000 * 60 * 5 // 5 minutos
+    });
+
+    if (isLoading || isFetching) return <div>Cargando...</div>;
+
+    if (isError) {
+        return (
+            <div style={{ padding: 12 }}>
+                <h3>Error cargando héroes</h3>
+                <pre>{String(error)}</pre>
+            </div>
+        );
+    }
+
     return (
         <>
             {/* Header */}
@@ -28,6 +57,11 @@ export const SearchPage = () => {
 
             {/* Filter and search */}
             <SearchControls />
+
+            {
+                heroes && (<HeroGrid heroes={heroes} />)
+            }
+
         </>
     );
 };
