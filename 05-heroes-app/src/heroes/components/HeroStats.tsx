@@ -13,7 +13,12 @@ export const HeroStats = () => {
     // Recuperamos los favoritos desde el contexto
     const { favoriteCount } = use(FavoriteHeroContext);
 
+    if (!summary) {
+        return <div>Loading ...</div>;
+    }
+
     return (
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
 
             <HeroStatCard
@@ -38,7 +43,7 @@ export const HeroStats = () => {
                 icon={<Heart className="h-4 w-4 text-muted-foreground" />}
             >
                 <div className="text-2xl font-bold text-red-600">{favoriteCount}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground" data-testid="favorite-percentage">
                     {summary?.totalHeroes ? ((favoriteCount / summary.totalHeroes) * 100).toFixed(2) : 0}% of total
                 </p>
             </HeroStatCard>
