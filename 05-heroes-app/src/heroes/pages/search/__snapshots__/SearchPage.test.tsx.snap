@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`should call search action with name and strength parameters 1`] = `
+<div>
+  <div>
+    Cargando...
+  </div>
+</div>
+`;
+
+exports[`should call search action with name parameter 1`] = `
+<div>
+  <div>
+    Cargando...
+  </div>
+</div>
+`;
+
+exports[`should call search action with strength parameter 1`] = `
+<div>
+  <div>
+    Cargando...
+  </div>
+</div>
+`;
+
+exports[`should render SearchPage with default values 1`] = `
+<div>
+  <div>
+    Cargando...
+  </div>
+</div>
+`;

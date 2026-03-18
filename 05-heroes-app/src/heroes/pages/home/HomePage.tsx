@@ -35,7 +35,7 @@ export const HomePage = () => {
     // Obtenemos los favoritos del contexto
     const { favoriteCount, favorites } = use(FavoriteHeroContext);
 
-    // ! No usar efectos para peticiones http
+    // ! No usar efectos para peticiones http en componentes UI, usar Hooks en capa de datos para Data Fetching
     // useEffect(() => {
     //     getHeroesByPage().then();
     // }, []);
