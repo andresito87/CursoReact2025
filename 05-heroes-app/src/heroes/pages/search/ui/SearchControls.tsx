@@ -16,7 +16,7 @@ export const SearchControls = () => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const activeAccordion = searchParams.get('active-accordion') ?? ''; // parámetro para indicar en la url si hay que mostrar el acordeón con los filtros avanzados
-    const selectedStrength = Number(searchParams.get('strength') ?? '0');
+    const selectedStrength = Number(searchParams.get('strength') ?? '1');
 
     const setQueryParams = (name: string, value: string) => {
         setSearchParams((prev) => {
@@ -129,6 +129,7 @@ export const SearchControls = () => {
                                         setQueryParams('strength', value[0].toString());
                                     }}
                                     max={10}
+                                    min={1}
                                     step={1} />
                             </div>
                         </div>
