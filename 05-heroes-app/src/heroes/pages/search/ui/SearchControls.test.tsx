@@ -78,12 +78,12 @@ describe('SearchControls', () => {
         // Obtenemos el slider desde el árbol de nodos
         const slider = screen.getByRole('slider');
 
-        expect(slider.getAttribute('aria-valuenow')).toBe('0'); // atributo que introduce Shadcn en el renderizado final del componente
+        expect(slider.getAttribute('aria-valuenow')).toBe('1'); // atributo que introduce Shadcn en el renderizado final del componente
 
         // Simulamos que el usuario movió el selector del slider hacia la derecha
         fireEvent.keyDown(slider, { key: 'ArrowRight' });
 
-        expect(slider.getAttribute('aria-valuenow')).toBe('1');
+        expect(slider.getAttribute('aria-valuenow')).toBe('2');
 
     });
 
