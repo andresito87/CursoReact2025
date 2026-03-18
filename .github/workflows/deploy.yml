@@ -46,7 +46,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: 05-heroes-app/dist
+          path: 05-heroes-app/docs
 
       - name: Deploy to GitHub Pages
         id: deployment
