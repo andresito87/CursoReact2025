@@ -66,3 +66,10 @@ Dentro de la carpeta del ejercicio o proyecto:
 npm install
 # Desarrollo
 npm run dev
+```
+
+# Despliegue del proyecto final en Github Pages y Render
+
+### Backend: [06-nest-heroes-backend](https://heroes-app-backend-2xm8.onrender.com/)
+
+### Frontend: [05-heroes-app](https://andresito87.github.io/CursoReact2025/)
