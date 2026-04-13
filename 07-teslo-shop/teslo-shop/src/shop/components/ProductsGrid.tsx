@@ -1,10 +1,10 @@
 import { useSearchParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Filter, Grid, List } from "lucide-react";
-import ProductCard from "./ProductCard";
+import { ProductCard } from "./ProductCard";
 import { FilterSidebar } from "./FilterSideBar";
-import type { Product } from "@/mocks/products.mock";
 import { useState } from "react";
+import type { Product } from "@/interfaces/product.interface";
 
 interface Props {
     products: Product[];
@@ -88,24 +88,31 @@ export const ProductsGrid = ({ products }: Props) => {
 
                     {/* Products Grid */}
                     <div className="flex-1">
-                        <div
-                            className={
-                                viewMode === 'grid'
-                                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                                    : "space-y-4"
-                            }
-                        >
-                            {products.map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    id={product.id}
-                                    name={product.name}
-                                    price={product.price}
-                                    image={product.image}
-                                    category={product.category}
-                                />
-                            ))}
-                        </div>
+                        {products.length > 0 ? (
+                            <div
+                                className={
+                                    viewMode === 'grid'
+                                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                                        : "space-y-4"
+                                }
+                            >
+                                {products.map((product) => (
+                                    <ProductCard
+                                        key={product.id}
+                                        id={product.id}
+                                        name={product.title}
+                                        price={product.price}
+                                        image={product.images[0]}
+                                        category={product.gender}
+                                        sizes={product.sizes}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex min-h-75 items-center justify-center text-center font-bold">
+                                No se encontraron productos
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
