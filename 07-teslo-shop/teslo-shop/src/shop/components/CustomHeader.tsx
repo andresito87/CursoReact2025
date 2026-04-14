@@ -6,10 +6,12 @@ import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomLogo } from "@/components/custom/CustomLogo";
+import { useAuthStore } from "@/auth/store/auth.store";
 
 export const CustomHeader = () => {
+    const { authStatus, isAdmin, logout } = useAuthStore();
 
-    const [searchParams, setSearchParams] = useSearchParams(); // obtenemos parámetros opcionales de la url 
+    const [searchParams, setSearchParams] = useSearchParams(); // obtenemos parámetros opcionales de la url
     const { gender } = useParams(); // obtenemos el segmento de ruta
 
     const inputRef = useRef<HTMLInputElement>(null); // utilizamos ref para evitar rerenders cuando cambia el valor del input cuando el usuario ingrese algo
@@ -28,7 +30,6 @@ export const CustomHeader = () => {
             newSearchParams.set('query', query);
             newSearchParams.delete("page");
         }
-
 
         setSearchParams(newSearchParams);
     };
@@ -86,17 +87,36 @@ export const CustomHeader = () => {
                         <Search className="h-5 w-5" />
                     </Button>
 
-                    <Link to='/auth/login'>
-                        <Button variant="default" size="sm" className="ml-2">
-                            Login
-                        </Button>
-                    </Link>
+                    {
+                        authStatus === 'not-authenticated' ? (
+                            <Link to='/auth/login'>
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="ml-2">
+                                    Login
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                size="sm" className="ml-2"
+                                onClick={logout}
+                            >
+                                Cerrar sesión
+                            </Button>
+                        )
 
-                    <Link to='/admin'>
-                        <Button variant="destructive" size="sm" className="ml-2">
-                            Admin
-                        </Button>
-                    </Link>
+                    }
+
+                    {isAdmin() && (
+                        <Link to='/admin'>
+                            <Button variant="destructive" size="sm" className="ml-2">
+                                Admin
+                            </Button>
+                        </Link>
+                    )}
+
                 </div>
             </div>
         </div>

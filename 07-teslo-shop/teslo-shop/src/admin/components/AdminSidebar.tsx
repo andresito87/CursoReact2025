@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { CustomLogo } from '@/components/custom/CustomLogo';
 import { Link, useLocation } from 'react-router';
+import { useAuthStore } from '@/auth/store/auth.store';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -23,6 +24,7 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
   onToggle,
 }) => {
 
+  const { user } = useAuthStore();
   const { pathname } = useLocation(); // hook que permite obtener ruta de donde nos encontramos dentro del sitio web
 
   const menuItems = [
@@ -98,15 +100,15 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
         <div className="border-t border-gray-200 p-4">
           <div className="flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-gray-50">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 font-semibold text-white">
-              JD
+              {user?.fullName.substring(0, 2).toLocaleUpperCase()}
             </div>
 
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium leading-none text-gray-900">
-                John Doe
+                {user?.fullName}
               </p>
               <p className="truncate text-xs text-gray-500">
-                john@company.com
+                {user?.email}
               </p>
             </div>
           </div>

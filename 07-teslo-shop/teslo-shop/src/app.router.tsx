@@ -8,69 +8,91 @@ import { RegisterPage } from "./auth/pages/register/RegisterPage";
 import { DashboardPage } from "./admin/pages/dashboard/DashboardPage";
 import { AdminProductsPage } from "./admin/pages/products/AdminProductsPage";
 import { AdminProductPage } from "./admin/pages/product/AdminProductPage";
+import {
+    NotAuthenticatedRoute,
+    AdminRoute,
+} from "./components/routes/ProtectedRoutes";
 
 export const appRouter = createBrowserRouter([
-    // Main routes
     {
         path: '/',
         Component: ShopLayout,
         children: [
             {
                 index: true,
-                Component: HomePage
+                Component: HomePage,
             },
             {
                 path: 'product/:idSlug',
-                Component: ProductPage
+                Component: ProductPage,
             },
             {
                 path: 'gender/:gender',
-                Component: GenderPage
-            }
-        ]
+                Component: GenderPage,
+            },
+        ],
     },
 
-    // Auth Routes
     {
         path: '/auth',
-        lazy: async () => ({ Component: (await import("./auth/layouts/AuthLayout")).default }),
+        lazy: async () => {
+            const { AuthLayout } = await import("./auth/layouts/AuthLayout");
+            // Protección de ruta
+            const ProtectedAuthLayout = () => (
+                <NotAuthenticatedRoute>
+                    <AuthLayout />
+                </NotAuthenticatedRoute>
+            );
+
+            return { Component: ProtectedAuthLayout };
+        },
         children: [
             {
                 index: true,
-                loader: () => redirect('/auth/login') // si alguien intenta acceder a /auth será redireccionado al /login automáticamente
+                loader: () => redirect('/auth/login'),
             },
             {
                 path: 'login',
-                Component: LoginPage
+                Component: LoginPage,
             },
             {
                 path: 'register',
-                Component: RegisterPage
+                Component: RegisterPage,
             },
-        ]
+        ],
     },
 
-    // Admin Routes
     {
         path: '/admin',
-        lazy: async () => ({ Component: (await import("./admin/layouts/AdminLayout")).default }),
+        lazy: async () => {
+            const { AdminLayout } = await import("./admin/layouts/AdminLayout");
+            // Protección de ruta
+            const ProtectedAdminLayout = () => (
+                <AdminRoute>
+                    <AdminLayout />
+                </AdminRoute>
+            );
+
+            return { Component: ProtectedAdminLayout };
+        },
         children: [
             {
                 index: true,
-                Component: DashboardPage
+                Component: DashboardPage,
             },
             {
                 path: "products",
-                Component: AdminProductsPage
+                Component: AdminProductsPage,
             },
             {
                 path: "products/:id",
-                Component: AdminProductPage
+                Component: AdminProductPage,
             },
-        ]
+        ],
     },
+
     {
         path: '*',
-        loader: () => redirect('/')
-    }
+        loader: () => redirect('/'),
+    },
 ]);

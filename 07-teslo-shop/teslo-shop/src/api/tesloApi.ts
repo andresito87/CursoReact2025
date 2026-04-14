@@ -6,6 +6,15 @@ const tesloApi = axios.create({
 
 });
 
-// TODO: Interceptors
+// Interceptores: Actuan como middlewares para cargar la información indicada en cada petición
+tesloApi.interceptors.request.use((config) => {
+
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
 
 export { tesloApi };
