@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useForm, useWatch } from 'react-hook-form';
 import { X, SaveAll, Tag, Upload, Plus } from "lucide-react";
@@ -13,12 +13,17 @@ interface Props {
     product: Product;
 
     // Methods
-    onSubmit: (productLike: Partial<Product>) => Promise<void>;
+    onSubmit: (productLike: Partial<Product> & { files?: File[]; }) => Promise<void>; // Concatención de tipos con &
     isPending: boolean;
 }
 
-// Lo dejamos fuera porque no necesita cmabiarse entre rerenders de React, son constantes
+// Lo dejamos fuera porque no necesita cambiarse entre rerenders de React, son constantes
 const availableSizes: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+// Permite guardar los archivos de las imagenes de los productos sin alterar la estuctura anterior, la extendemos
+interface FormInputs extends Product {
+    files?: File[];
+}
 
 export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending }: Props) => {
 
@@ -28,9 +33,10 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
         handleSubmit,
         formState: { errors },
         getValues,
+        reset,
         setValue,
         control
-    } = useForm({
+    } = useForm<FormInputs>({
         defaultValues: product
     });
 
@@ -39,6 +45,16 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
     const selectedSizes = useWatch({ control, name: 'sizes' }); // hook que permite al React Compiler optimizar entre rerenders
     const selectedTags = useWatch({ control, name: 'tags' }); // hook que permite al React Compiler optimizar entre rerenders
     const currentStock = useWatch({ control, name: 'stock' }); // hook que permite al React Compiler optimizar entre rerenders
+    const selectedImages = useWatch({ control, name: 'images', defaultValue: product.images }) || [];  // hook que permite al React Compiler optimizar entre rerenders
+    const files = useWatch({ control, name: 'files', defaultValue: [] }) || [];  // Obtenemos los archivos de la imagenes de los productos desde el propio formulario
+
+    // Efecto para limpiar las imágenes que se acaban de subir de la página
+    useEffect(() => {
+        reset({
+            ...product,
+            files: []
+        });
+    }, [product, reset]);
 
     const addTag = () => {
         if (tagInputRef.current?.value) {
@@ -67,6 +83,16 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
         setValue('sizes', Array.from(sizeSet));
     };
 
+    const removeImage = (indexToRemove: number) => {
+        const currentImages = getValues('images') || [];
+        const updatedImages = currentImages.filter((_, index) => index !== indexToRemove);
+
+        setValue('images', updatedImages, {
+            shouldDirty: true,
+            shouldTouch: true
+        });
+    };
+
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -82,16 +108,43 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
         e.stopPropagation();
         setDragActive(false);
         const files = e.dataTransfer.files;
-        console.log(files);
+
+        if (!files) return;
+
+        // Obtenemos los archivos de la imagenes de los productos desde el propio formulario con React Hook Form
+        const currentFiles = getValues('files') || [];
+        setValue('files', [...currentFiles, ...Array.from(files)], {
+            shouldDirty: true,
+            shouldTouch: true
+        });
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
-        console.log(files);
+
+        if (!files) return;
+
+        // Obtenemos los archivos de la imagenes de los productos desde el propio formulario con RHF
+        const currentFiles = getValues('files') || [];
+        setValue('files', [...currentFiles, ...Array.from(files)], {
+            shouldDirty: true,
+            shouldTouch: true
+        });
+
+        e.target.value = '';
+    };
+
+    const handleFormSubmit = async (productLike: FormInputs) => {
+        await onSubmit(productLike);
+
+        setValue('files', [], {
+            shouldDirty: false,
+            shouldTouch: false
+        });
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
             <div className="flex justify-between items-center">
                 <AdminTitle title={title} subTitle={subTitle} />
                 <div className="flex justify-end mb-10 gap-4">
@@ -366,13 +419,43 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                     <div className="space-y-6">
                         {/* Product Images */}
                         <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6">
-                            <h2 className="text-xl font-semibold text-slate-800 mb-6">
+                            <h2 className="text-xl font-semibold text-slate-800 mb-3">
                                 Imágenes del producto
                             </h2>
 
+                            {/* Current Images */}
+                            <div className="space-y-3">
+                                <h3 className="text-sm font-medium text-slate-700">
+                                    Imágenes actuales
+                                </h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {selectedImages.map((image, index) => (
+                                        <div key={index} className="relative group">
+                                            <div className="aspect-square bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center">
+                                                <img
+                                                    src={image}
+                                                    alt="Product"
+                                                    className="w-full h-full object-cover rounded-lg"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(index)}
+                                                className="cursor-pointer absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                            <p className="mt-1 text-xs text-slate-600 truncate">
+                                                {image}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Drag & Drop Zone */}
                             <div
-                                className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${dragActive
+                                className={`mt-12 relative border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${dragActive
                                     ? 'border-blue-400 bg-blue-50'
                                     : 'border-slate-300 hover:border-slate-400'
                                     }`}
@@ -404,30 +487,32 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                 </div>
                             </div>
 
-                            {/* Current Images */}
-                            <div className="mt-6 space-y-3">
+                            {/* Imágenes por cargar */}
+                            <div className={
+                                cn("mt-3 space-y-3", {
+                                    'hidden': files.length === 0
+                                })
+                            }>
                                 <h3 className="text-sm font-medium text-slate-700">
-                                    Imágenes actuales
+                                    Imágenes por cargar
                                 </h3>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {product.images.map((image, index) => (
-                                        <div key={index} className="relative group">
-                                            <div className="aspect-square bg-slate-100 rounded-lg border border-slate-200 flex items-center justify-center">
-                                                <img
-                                                    src={image}
-                                                    alt="Product"
-                                                    className="w-full h-full object-cover rounded-lg"
-                                                />
-                                            </div>
-                                            <button className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                                <X className="h-3 w-3" />
-                                            </button>
-                                            <p className="mt-1 text-xs text-slate-600 truncate">
-                                                {image}
-                                            </p>
-                                        </div>
-                                    ))}
+                                    {
+                                        files.map((file, index) => (
+                                            <img
+                                                key={index}
+                                                src={URL.createObjectURL(file)}
+                                                alt="Product"
+                                                className="w-full h-full object-cover rounded-lg"
+                                            />
+                                        ))
+                                    }
                                 </div>
+                                {
+                                    files.length === 0 && (
+                                        <p className="text-red-500">No hay archivos seleccionados</p>
+                                    )
+                                }
                             </div>
                         </div>
 
@@ -473,7 +558,7 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                         Imágenes
                                     </span>
                                     <span className="text-sm text-slate-600">
-                                        {product.images.length} imágenes
+                                        {selectedImages.length} imágenes
                                     </span>
                                 </div>
 
