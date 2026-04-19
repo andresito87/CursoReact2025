@@ -22,10 +22,7 @@ export const useProduct = (id: string) => {
             // Invalidamos la caché que tenga como clave producto y productos para actualizar 
             // el listado mostrado al usuario sin recargar la página
             queryClient.invalidateQueries({ queryKey: ['products'] });
-            queryClient.invalidateQueries({ queryKey: ['product', { id: product.id }] });
-
-            // Actualizar la info del producto modificado
-            queryClient.setQueryData(['products', { id: product.id }], product);
+            queryClient.setQueryData(['product', { id: product.id }], product);
         }
     });
 

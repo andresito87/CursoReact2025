@@ -1,16 +1,44 @@
+import { deleteProductAction } from "@/admin/actions/delete-product.action";
+import { DeleteProductModal } from "@/admin/components/DeleteProductModal";
 import { AdminTitle } from "@/admin/components/AdminTitle";
 import { CustomFullScreenLoading } from "@/components/custom/CustomFullScreenLoading";
 import { CustomPagination } from "@/components/custom/CustomPagination";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import type { Product } from "@/interfaces/product.interface";
 import { currencyFormatter } from "@/lib/currency-formatter";
 import { useProducts } from "@/shop/hooks/useProducts";
-import { PencilIcon, PlusIcon } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { PencilIcon, PlusIcon, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 export const AdminProductsPage = () => {
 
+    const queryClient = useQueryClient();
     const { data, isLoading } = useProducts();
+    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteProductAction,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            toast.success('Producto eliminado correctamente', {
+                position: 'top-right'
+            });
+            setProductToDelete(null);
+        },
+        onError: () => {
+            toast.error('Error al eliminar el producto');
+            setProductToDelete(null);
+        }
+    });
+
+    const handleDeleteProduct = async () => {
+        if (!productToDelete) return;
+        await deleteMutation.mutateAsync(productToDelete.id);
+    };
 
     if (isLoading) {
         return <CustomFullScreenLoading />;
@@ -69,11 +97,22 @@ export const AdminProductsPage = () => {
                             <TableCell>{product.stock}</TableCell>
                             <TableCell>{product.sizes.join(', ')}</TableCell>
                             <TableCell className="text-right">
-                                <Link to={`/admin/products/${product.id}`}>
-                                    <PencilIcon
-                                        className="w-4 h-4 text-blue-500"
-                                    />
-                                </Link>
+                                <div className="flex items-center justify-end gap-3">
+                                    <Link to={`/admin/products/${product.id}`}>
+                                        <PencilIcon
+                                            className="w-4 h-4 text-blue-500"
+                                        />
+                                    </Link>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setProductToDelete(product)}
+                                        className="cursor-pointer"
+                                        aria-label={`Eliminar ${product.title}`}
+                                    >
+                                        <Trash2 className="w-4 h-4 text-red-500" />
+                                    </button>
+                                </div>
                             </TableCell>
                         </TableRow>
                     ))}
@@ -81,6 +120,14 @@ export const AdminProductsPage = () => {
             </Table>
 
             <CustomPagination totalPages={data?.pages || 0} />
+
+            <DeleteProductModal
+                isOpen={!!productToDelete}
+                productName={productToDelete?.title || ''}
+                isLoading={deleteMutation.isPending}
+                onConfirm={handleDeleteProduct}
+                onCancel={() => setProductToDelete(null)}
+            />
 
         </>
     );

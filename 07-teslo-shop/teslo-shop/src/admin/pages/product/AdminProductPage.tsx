@@ -28,13 +28,15 @@ export const AdminProductPage = () => {
                 toast.success('Producto actualizado correctamente', {
                     position: 'top-right'
                 });
-                navigate(`/admin/products/${data.id}`);
+
+                if (id === 'new') {
+                    navigate(`/admin/products/${data.id}`);
+                }
             },
             onError: () => {
                 toast.error('Error al actualizar el producto');
             }
         });
-
     };
 
     if (isError) {
@@ -49,11 +51,15 @@ export const AdminProductPage = () => {
         return <Navigate to='/admin/products' />;
     }
 
-    return <AdminProductForm
-        title={title}
-        subTitle={subTitle}
-        product={product}
-        onSubmit={handleSubmit}
-        isPending={mutation.isPending}
-    />;
+    return (
+        <>
+            <AdminProductForm
+                title={title}
+                subTitle={subTitle}
+                product={product}
+                onSubmit={handleSubmit}
+                isPending={mutation.isPending}
+            />
+        </>
+    );
 };

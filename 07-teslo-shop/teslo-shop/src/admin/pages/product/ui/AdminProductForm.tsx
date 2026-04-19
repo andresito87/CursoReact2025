@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { X, SaveAll, Tag, Upload, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminTitle } from "@/admin/components/AdminTitle";
@@ -29,7 +29,6 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
 
     const [dragActive, setDragActive] = useState(false);
     const {
-        register,
         handleSubmit,
         formState: { errors },
         getValues,
@@ -37,15 +36,18 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
         setValue,
         control
     } = useForm<FormInputs>({
-        defaultValues: product
+        defaultValues: {
+            ...product,
+            files: []
+        }
     });
 
     const tagInputRef = useRef<HTMLInputElement | null>(null);
 
-    const selectedSizes = useWatch({ control, name: 'sizes' }); // hook que permite al React Compiler optimizar entre rerenders
-    const selectedTags = useWatch({ control, name: 'tags' }); // hook que permite al React Compiler optimizar entre rerenders
-    const currentStock = useWatch({ control, name: 'stock' }); // hook que permite al React Compiler optimizar entre rerenders
-    const selectedImages = useWatch({ control, name: 'images', defaultValue: product.images }) || [];  // hook que permite al React Compiler optimizar entre rerenders
+    const selectedSizes = useWatch({ control, name: 'sizes', defaultValue: [] }) || []; // hook que permite al React Compiler optimizar entre rerenders
+    const selectedTags = useWatch({ control, name: 'tags', defaultValue: [] }) || []; // hook que permite al React Compiler optimizar entre rerenders
+    const currentStock = useWatch({ control, name: 'stock', defaultValue: product.stock }) || 0; // hook que permite al React Compiler optimizar entre rerenders
+    const selectedImages = useWatch({ control, name: 'images', defaultValue: [] }) || [];  // hook que permite al React Compiler optimizar entre rerenders
     const files = useWatch({ control, name: 'files', defaultValue: [] }) || [];  // Obtenemos los archivos de la imagenes de los productos desde el propio formulario
 
     // Efecto para limpiar las imágenes que se acaban de subir de la página
@@ -60,7 +62,10 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
         if (tagInputRef.current?.value) {
             const currentTags = new Set(getValues('tags'));
             currentTags.add(tagInputRef.current?.value);
-            setValue('tags', Array.from(currentTags));
+            setValue('tags', Array.from(currentTags), {
+                shouldDirty: true,
+                shouldTouch: true
+            });
             tagInputRef.current.value = "";
         }
     };
@@ -68,19 +73,28 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
     const removeTag = (tag: string) => {
         const currentTags = new Set(getValues('tags'));
         currentTags.delete(tag);
-        setValue('tags', Array.from(currentTags));
+        setValue('tags', Array.from(currentTags), {
+            shouldDirty: true,
+            shouldTouch: true
+        });
     };
 
     const addSize = (size: Size) => {
         const sizeSet = new Set(getValues('sizes'));
         sizeSet.add(size);
-        setValue('sizes', Array.from(sizeSet));
+        setValue('sizes', Array.from(sizeSet), {
+            shouldDirty: true,
+            shouldTouch: true
+        });
     };
 
     const removeSize = (size: Size) => {
         const sizeSet = new Set(getValues('sizes'));
         sizeSet.delete(size);
-        setValue('sizes', Array.from(sizeSet));
+        setValue('sizes', Array.from(sizeSet), {
+            shouldDirty: true,
+            shouldTouch: true
+        });
     };
 
     const removeImage = (indexToRemove: number) => {
@@ -134,8 +148,16 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
         e.target.value = '';
     };
 
-    const handleFormSubmit = async (productLike: FormInputs) => {
-        await onSubmit(productLike);
+    const handleFormSubmit = async (formValues: FormInputs) => {
+        const completeProduct = {
+            ...formValues,
+            sizes: selectedSizes,
+            tags: selectedTags,
+            images: selectedImages,
+            files: files
+        };
+
+        await onSubmit(completeProduct);
 
         setValue('files', [], {
             shouldDirty: false,
@@ -183,18 +205,23 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Título del producto
                                     </label>
-                                    <input
-                                        type="text"
-                                        {...register('title', {
-                                            required: true
-                                        })}
-                                        className={cn(
-                                            'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
-                                            {
-                                                'border-red-500': errors.title
-                                            }
+                                    <Controller
+                                        name="title"
+                                        control={control}
+                                        rules={{ required: true }}
+                                        render={({ field }) => (
+                                            <input
+                                                type="text"
+                                                {...field}
+                                                className={cn(
+                                                    'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                                                    {
+                                                        'border-red-500': errors.title
+                                                    }
+                                                )}
+                                                placeholder="Título del producto"
+                                            />
                                         )}
-                                        placeholder="Título del producto"
                                     />
                                     {
                                         errors.title && (<p className="text-red-500 text-sm">El título es requerido</p>)
@@ -206,19 +233,23 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                         <label className="block text-sm font-medium text-slate-700 mb-2">
                                             Precio (€)
                                         </label>
-                                        <input
-                                            type="number"
-                                            {...register('price', {
-                                                required: true,
-                                                min: 1
-                                            })}
-                                            className={cn(
-                                                'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
-                                                {
-                                                    'border-red-500': errors.price
-                                                }
+                                        <Controller
+                                            name="price"
+                                            control={control}
+                                            rules={{ required: true, min: 1 }}
+                                            render={({ field }) => (
+                                                <input
+                                                    type="number"
+                                                    {...field}
+                                                    className={cn(
+                                                        'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                                                        {
+                                                            'border-red-500': errors.price
+                                                        }
+                                                    )}
+                                                    placeholder="Precio del producto"
+                                                />
                                             )}
-                                            placeholder="Precio del producto"
                                         />
                                         {
                                             errors.price && (<p className="text-red-500 text-sm">El precio debe ser mayor a 0</p>)
@@ -229,19 +260,23 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                         <label className="block text-sm font-medium text-slate-700 mb-2">
                                             Stock del producto
                                         </label>
-                                        <input
-                                            type="number"
-                                            {...register('stock', {
-                                                required: true,
-                                                min: 1
-                                            })}
-                                            className={cn(
-                                                'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
-                                                {
-                                                    'border-red-500': errors.stock
-                                                }
+                                        <Controller
+                                            name="stock"
+                                            control={control}
+                                            rules={{ required: true, min: 1 }}
+                                            render={({ field }) => (
+                                                <input
+                                                    type="number"
+                                                    {...field}
+                                                    className={cn(
+                                                        'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                                                        {
+                                                            'border-red-500': errors.stock
+                                                        }
+                                                    )}
+                                                    placeholder="Stock del producto"
+                                                />
                                             )}
-                                            placeholder="Stock del producto"
                                         />
                                         {
                                             errors.stock && (<p className="text-red-500 text-sm">El inventario debe ser mayor a 0</p>)
@@ -253,19 +288,26 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Slug del producto
                                     </label>
-                                    <input
-                                        type="text"
-                                        {...register('slug', {
+                                    <Controller
+                                        name="slug"
+                                        control={control}
+                                        rules={{
                                             required: true,
                                             validate: (value) => !/\s/.test(value) || 'El slug no puede contener espacios en blanco'
-                                        })}
-                                        className={cn(
-                                            'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
-                                            {
-                                                'border-red-500': errors.slug
-                                            }
+                                        }}
+                                        render={({ field }) => (
+                                            <input
+                                                type="text"
+                                                {...field}
+                                                className={cn(
+                                                    'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                                                    {
+                                                        'border-red-500': errors.slug
+                                                    }
+                                                )}
+                                                placeholder="Slug del producto"
+                                            />
                                         )}
-                                        placeholder="Slug del producto"
                                     />
                                     {
                                         errors.slug && (<p className="text-red-500 text-sm">{
@@ -278,34 +320,44 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Género del producto
                                     </label>
-                                    <select
-                                        {...register('gender')}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                    >
-                                        <option value="men">Hombre</option>
-                                        <option value="women">Mujer</option>
-                                        <option value="unisex">Unisex</option>
-                                        <option value="kids">Niño</option>
-                                    </select>
+                                    <Controller
+                                        name="gender"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <select
+                                                {...field}
+                                                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                            >
+                                                <option value="men">Hombre</option>
+                                                <option value="women">Mujer</option>
+                                                <option value="unisex">Unisex</option>
+                                                <option value="kid">Niño</option>
+                                            </select>
+                                        )}
+                                    />
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Descripción del producto
                                     </label>
-                                    <textarea
-                                        {...register('description', {
-                                            required: true
-                                        }
+                                    <Controller
+                                        name="description"
+                                        control={control}
+                                        rules={{ required: true }}
+                                        render={({ field }) => (
+                                            <textarea
+                                                {...field}
+                                                rows={5}
+                                                className={cn(
+                                                    'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
+                                                    {
+                                                        'border-red-500': errors.description
+                                                    }
+                                                )}
+                                                placeholder="Descripción del producto"
+                                            />
                                         )}
-                                        rows={5}
-                                        className={cn(
-                                            'w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200',
-                                            {
-                                                'border-red-500': errors.description
-                                            }
-                                        )}
-                                        placeholder="Descripción del producto"
                                     />
                                     {
                                         errors.description && (<p className="text-red-500 text-sm">La descripción es requerida</p>)
@@ -333,6 +385,7 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                         >
                                             {size}
                                             <button
+                                                type="button"
                                                 onClick={() => removeSize(size)}
                                                 className="cursor-pointer ml-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
                                             >
@@ -381,6 +434,7 @@ export const AdminProductForm = ({ title, subTitle, product, onSubmit, isPending
                                             <Tag className="h-3 w-3 mr-1" />
                                             {tag}
                                             <button
+                                                type="button"
                                                 onClick={() => removeTag(tag)}
                                                 className="cursor-pointer ml-2 text-green-600 hover:text-green-800 transition-colors duration-200"
                                             >
